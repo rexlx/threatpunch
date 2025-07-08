@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' http://localhost:8081 http://fairlady:8081">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles/bulma.min.css">
+    <link rel="stylesheet" href="styles/custom.css">
+    <title>ThreatPunch</title>
+</head>
+
+<body>
+<!-- The Login Screen section has been completely removed -->
+
+<section class="section has-background-black" id="errata">
+    <div class="container" id="errors" style="max-height: 200px; overflow-y: scroll;"><p class="has-text-success">System nominal</p></div>
+</section>
+
+<!--MAIN-->
+<section class="section has-background-black" id="mainSection">
+    <div class="columns" id="mainColumns">
+        <div class="column is-three-quarters">
+            <div class="box has-background-custom" id="matchBox">
+                <h1 class="title has-text-info">Search</h1>
+                <form action="">
+                    <div class="field">
+                        <div class="control">
+                            <textarea class="textarea" placeholder="Feed me data..." id="userSearch"></textarea>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="control">
+                            <button class="button is-info is-outlined" id="searchButton" type="submit">Search</button>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="control">
+                            <div class="buttons are-small">
+                                <button class="button is-black has-text-info-light" id="historyButton">History</button>
+                                <button class="button is-black has-text-info-light" id="goToButton">Go To</button>
+                                <button class="button is-black has-text-info-light" id="uploadButton">Upload</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!--SERVICES-->
+<section class="section has-background-custom" id="servicesView">
+    <h1 class="title has-text-info">Services</h1>
+    <div class="columns">
+        <div class="column">
+            <form>
+            <button class="button is-info is-pulled-left is-outlined" id="backButtonServices">
+                Back
+              </button>
+            </form>
+        </div>
+        <div class="column"></div>
+        <div class="column">
+            <div class="column" id="servicesList">
+                <div class="card-list" id="cardList"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!--PROFILE-->
+<section class="section has-background-custom" id="profileView">
+    <div class="columns">
+        <div class="column">
+            <h1 class="title has-text-info" style="margin:0px">Profile & Settings</h1>
+            <div class="box has-background-custom" id="profileBox">
+                <form>
+                    <div class="field">
+                        <label class="label has-text-info">Server URL</label>
+                        <div class="control">
+                            <input class="input" type="text" placeholder="e.g., http://YOUR.URL:8081" id="editServerUrl">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label has-text-info">Email</label>
+                        <div class="control">
+                            <input class="input" type="text" placeholder="email" id="editUserEmail">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label has-text-info">Key</label>
+                        <div class="control">
+                            <input class="input" type="password" placeholder="API Key" id="editUserKey">
+                        </div>
+                    </div>
+                </br>
+                    <div class="field">
+                        <div class="control profileButtons" >
+                            <button class="button is-info is-pulled-left is-outlined" id="backButtonProfile">
+                                Back
+                              </button>
+                            <button class="button is-info is-outlined" id="updateUserButton">
+                                  <span>Update & Save</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+</body>
+<script type="module" src="src/renderer.js"></script>
+</html>

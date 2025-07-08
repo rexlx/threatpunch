@@ -1,0 +1,32 @@
+{
+  "name": "threatpunch",
+  "version": "1.0.0",
+  "description": "Desktop client for ThreatPunch",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "author": "Your Name",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^28.2.4",
+    "electron-builder": "^24.13.3"
+  },
+  "dependencies": {
+    "electron-store": "^8.2.0"
+  },
+  "build": {
+    "appId": "com.threatpunch.desktop",
+    "productName": "ThreatPunch",
+    "files": [
+      "src/**/*",
+      "index.html",
+      "styles/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "output": "dist"
+    }
+  }
+}

@@ -1,0 +1,52 @@
+.menu-list a.is-active {
+  background-color: aquamarine;
+}
+
+
+/*Change links on hover*/
+.navbar-item:hover{
+background-color: rgba(112, 112, 112, 0.24) !important;
+}
+
+#searchBox {
+box-shadow: 0px 2px 4px rgba(247, 247, 247, 0.3);
+
+}
+
+.containerCheckBox {
+display: flex;          /* Enable flexbox */
+justify-content: space-between; /* Space between elements */
+align-items: center;    /* Center items vertically */
+padding: 0px 20px      /* Add padding */
+}
+
+.card-header{
+display:block;
+}
+
+input{
+
+accent-color: green;
+}
+.profileButtons{
+  display:flex; 
+  justify-content: space-between;
+
+}
+
+.has-background-custom {
+  background-color: #0b141c;
+}
+
+@font-face {
+  font-family: 'Intel One Mono';
+  src: url('IntelOneMono-Regular.woff2') format('woff2'),
+      url('IntelOneMono-Regular.woff') format('woff');
+      font-weight: normal;
+      font-style: normal;
+}
+body {
+  font-family: 'Intel One Mono', monospace;
+  background-color: #000;
+  color: #fff;
+}
