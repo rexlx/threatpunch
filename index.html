@@ -20,31 +20,32 @@
 
 <!--MAIN-->
 <section class="section has-background-black" id="mainSection">
+    <!-- The mainColumns div now contains the sidebar and the content area -->
     <div class="columns" id="mainColumns">
-        <div class="column is-three-quarters">
+        <!-- Sidebar Column -->
+        <div class="column is-one-quarter">
+            <aside class="menu">
+                <p class="menu-label has-text-grey-light">
+                    Actions
+                </p>
+                <ul class="menu-list">
+                    <!-- This link will reset the view to the search form -->
+                    <li><a id="sidebarSearch" class="is-active">Search</a></li>
+                </ul>
+                <p class="menu-label has-text-grey-light">
+                    Settings
+                </p>
+                <ul class="menu-list">
+                    <li><a id="sidebarServices">Services</a></li>
+                    <li><a id="sidebarProfile">Profile</a></li>
+                </ul>
+            </aside>
+        </div>
+        <!-- Content Column -->
+        <div class="column">
+            <!-- The matchBox is now the container for dynamic content (search, results, etc.) -->
             <div class="box has-background-custom" id="matchBox">
-                <h1 class="title has-text-info">Search</h1>
-                <form action="">
-                    <div class="field">
-                        <div class="control">
-                            <textarea class="textarea" placeholder="Feed me data..." id="userSearch"></textarea>
-                        </div>
-                    </div>
-                    <div class="field">
-                        <div class="control">
-                            <button class="button is-info is-outlined" id="searchButton" type="submit">Search</button>
-                        </div>
-                    </div>
-                    <div class="field">
-                        <div class="control">
-                            <div class="buttons are-small">
-                                <button class="button is-black has-text-info-light" id="historyButton">History</button>
-                                <button class="button is-black has-text-info-light" id="goToButton">Go To</button>
-                                <button class="button is-black has-text-info-light" id="uploadButton">Upload</button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
+                <!-- Content is now dynamically inserted by renderer.js -->
             </div>
         </div>
     </div>
@@ -61,9 +62,7 @@
                 Back to Main
             </button>
         </div>
-        <!-- This is now our responsive grid container -->
         <div id="cardList" class="columns is-multiline is-variable is-2-tablet is-3-desktop is-4-widescreen">
-            <!-- Service cards will be inserted here by renderer.js -->
         </div>
     </div>
 </section>
