@@ -50,9 +50,7 @@ function checkUser() {
     if (application.user && application.user.key && application.apiUrl) {
         showView(mainSection);
         matchBox.innerHTML = `<p class="has-text-info">Logged in as ${escapeHtml(application.user.email)}</p>`;
-        console.log("User data is valid, showing main section.");
     } else {
-        console.log("User data is missing or invalid, showing profile section.");
         // If data is missing, force user to the profile screen to enter it.
         editUserEmail.value = application.user.email || '';
         editUserKey.value = application.user.key || '';
@@ -63,7 +61,7 @@ function checkUser() {
 
 // Main application entry point
 async function main() {
-    showView(null);
+    showView(null); // Hide all views initially
     await application.init(); // Asynchronously load data from the store
     checkUser(); // Update the UI based on loaded data
     attachEventListeners(); // Attach all event listeners
@@ -311,9 +309,24 @@ async function handleMatches(kind, matchPair, route) {
     application.resultWorkers.pop();
 }
 
+/**
+ * --- THIS IS THE FIX FOR THE CARD SIZE ---
+ * Creates a responsive grid column containing a service card.
+ * @param {object} service The service data object.
+ * @returns {HTMLElement} A div element representing a grid column.
+ */
 function createServiceCard(service) {
+    // Create a column wrapper for the card. This is the key to the grid layout.
+    const column = document.createElement('div');
+    // Use Bulma's responsive classes. This card will take up:
+    // - a third of the width on desktop
+    // - half of the width on tablet
+    column.className = 'column is-one-third-desktop is-half-tablet';
+
     const card = document.createElement('div');
-    card.className = 'card has-background-dark';
+    // Add a fixed height and flexbox to ensure cards in the same row are the same height
+    card.className = 'card has-background-dark is-flex is-flex-direction-column';
+    card.style.height = '100%'; // Make card fill the column height
 
     const header = document.createElement('header');
     header.className = 'card-header';
@@ -321,37 +334,58 @@ function createServiceCard(service) {
     const title = document.createElement('p');
     title.className = 'card-header-title has-text-white';
     title.textContent = escapeHtml(service.kind);
-
-    const addButton = document.createElement('button');
-    addButton.className = 'button add-button is-warning is-outlined card-header-icon';
-    addButton.textContent = service.checked ? 'Remove' : 'Add';
-    
     header.appendChild(title);
-    header.appendChild(addButton);
 
     const contentDiv = document.createElement('div');
     contentDiv.className = 'card-content has-background-black';
+    // Make content area flexible to push the footer down
+    contentDiv.style.flexGrow = '1'; 
 
     const content = document.createElement('div');
     content.className = 'content has-text-link-light';
     content.textContent = Array.isArray(service.type) ? service.type.map(escapeHtml).join(', ') : "Invalid Type";
-    
     contentDiv.appendChild(content);
+
+    const footer = document.createElement('footer');
+    footer.className = 'card-footer';
+
+    const addButton = document.createElement('a'); // Use <a> for card-footer-item
+    addButton.href = '#';
+    addButton.className = 'card-footer-item has-text-white';
+    addButton.textContent = service.checked ? 'Remove' : 'Add';
+    if(service.checked) {
+        addButton.classList.add('has-background-warning');
+    } else {
+        addButton.classList.add('has-background-success');
+    }
+    
+    footer.appendChild(addButton);
+    
     card.appendChild(header);
     card.appendChild(contentDiv);
+    card.appendChild(footer);
 
-    addButton.addEventListener('click', () => {
+    addButton.addEventListener('click', (e) => {
+        e.preventDefault();
         service.checked = !service.checked;
         if (service.checked) {
             application.addService(service);
+            addButton.textContent = 'Remove';
+            addButton.classList.remove('has-background-success');
+            addButton.classList.add('has-background-warning');
         } else {
             application.removeService(service);
+            addButton.textContent = 'Add';
+            addButton.classList.remove('has-background-warning');
+            addButton.classList.add('has-background-success');
         }
-        addButton.textContent = service.checked ? 'Remove' : 'Add';
     });
 
-    return card;
+    // Append the finished card to the column and return the column
+    column.appendChild(card);
+    return column;
 }
+
 
 // --- Utility Functions ---
 function escapeHtml(unsafe) {

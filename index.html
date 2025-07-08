@@ -52,20 +52,18 @@
 
 <!--SERVICES-->
 <section class="section has-background-custom" id="servicesView">
-    <h1 class="title has-text-info">Services</h1>
-    <div class="columns">
-        <div class="column">
-            <form>
-            <button class="button is-info is-pulled-left is-outlined" id="backButtonServices">
-                Back
-              </button>
-            </form>
+    <div class="container">
+        <div class="block">
+             <h1 class="title has-text-info">Services</h1>
         </div>
-        <div class="column"></div>
-        <div class="column">
-            <div class="column" id="servicesList">
-                <div class="card-list" id="cardList"></div>
-            </div>
+        <div class="block">
+            <button class="button is-info is-outlined" id="backButtonServices">
+                Back to Main
+            </button>
+        </div>
+        <!-- This is now our responsive grid container -->
+        <div id="cardList" class="columns is-multiline is-variable is-2-tablet is-3-desktop is-4-widescreen">
+            <!-- Service cards will be inserted here by renderer.js -->
         </div>
     </div>
 </section>
@@ -80,7 +78,7 @@
                     <div class="field">
                         <label class="label has-text-info">Server URL</label>
                         <div class="control">
-                            <input class="input" type="text" placeholder="e.g., http://YOUR.URL:8081" id="editServerUrl">
+                            <input class="input" type="text" placeholder="e.g., http://fairlady:8081" id="editServerUrl">
                         </div>
                     </div>
                     <div class="field">
