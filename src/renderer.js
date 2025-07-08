@@ -154,11 +154,12 @@ function attachEventListeners() {
             const id = document.getElementById("goToValue").value;
             try {
                 await application.fetchDetails(id);
-                const dataUrl = `data:text/html;charset=utf-8,
-                    <body style="background-color:#111; color: #eee; font-family: monospace; white-space: pre; padding: 1em;">
-                    ${escapeHtml(JSON.stringify(application.focus, null, 2))}
-                    </body>`;
-                window.electronAPI.createWindow({ url: dataUrl, title: `Details for ${id}` });
+                // --- THIS IS THE FIX ---
+                // Use the new, secure method to create the details window
+                window.electronAPI.createDetailsWindow({
+                    details: application.focus,
+                    title: `Details for ${id}`
+                });
             } catch (error) {
                 application.errors.push(error.toString());
             }
@@ -241,12 +242,6 @@ function attachEventListeners() {
     });
 }
 
-/**
- * --- THIS IS THE NEW HELPER FUNCTION ---
- * Renders an array of results as cards in the matchBox.
- * @param {Array} resultsArray The array of results to render (e.g., application.results or application.resultHistory)
- * @param {boolean} isHistoryView Differentiates between a history view and a results view for button text/actions.
- */
 function renderResultCards(resultsArray, isHistoryView = false) {
     matchBox.innerHTML = ""; // Clear previous content
     if (resultsArray.length === 0) {
@@ -304,11 +299,12 @@ function renderResultCards(resultsArray, isHistoryView = false) {
             const thisLink = e.target.id.replace("details-", "");
             try {
                 await application.fetchDetails(thisLink);
-                const dataUrl = `data:text/html;charset=utf-8,
-                    <body style="background-color:#111; color: #eee; font-family: monospace; white-space: pre; padding: 1em;">
-                    ${escapeHtml(JSON.stringify(application.focus, null, 2))}
-                    </body>`;
-                window.electronAPI.createWindow({ url: dataUrl, title: `Details for ${thisLink}` });
+                // --- THIS IS THE FIX ---
+                // Use the new, secure method to create the details window
+                window.electronAPI.createDetailsWindow({
+                    details: application.focus,
+                    title: `Details for ${thisLink}`
+                });
             } catch (error) {
                 application.errors.push(error.toString());
             }

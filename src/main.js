@@ -46,7 +46,6 @@ function createMainWindow() {
         isMac ? { role: 'close' } : { role: 'quit' }
       ]
     },
-    // --- THIS IS THE FIX FOR THE PASTE ISSUE ---
     // { role: 'editMenu' }
     {
       label: 'Edit',
@@ -177,15 +176,26 @@ ipcMain.handle('save-file', async (event, { filename, content }) => {
   }
 });
 
-// IPC for creating new windows
-ipcMain.handle('create-window', (event, { url, title }) => {
+// --- THIS IS THE FIX FOR THE SECURITY WARNING ---
+// IPC for creating the new, secure details window
+ipcMain.handle('create-details-window', (event, { details, title }) => {
     const win = new BrowserWindow({
         width: 800,
         height: 600,
         title: title,
         webPreferences: {
+            // Important: The preload script must be specified for all new windows
+            preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
+            nodeIntegration: false,
         }
     });
-    win.loadURL(url);
+
+    // Load the new HTML file instead of a data URL
+    win.loadFile('details.html');
+
+    // Send the data to the window once it has finished loading and is ready to receive it
+    win.webContents.on('did-finish-load', () => {
+        win.webContents.send('details-data', details);
+    });
 });

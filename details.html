@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!-- This CSP remains the same and is now correctly enforced -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'">
+    <title>Details</title>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #f0f0f0;
+            font-family: monospace, sans-serif;
+            white-space: pre;
+            padding: 1.5em;
+            word-break: break-all;
+            word-wrap: break-word;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <pre id="details-content">Loading details...</pre>
+
+    <!-- The inline script has been removed and replaced with a secure file load -->
+    <script src="src/details.js"></script>
+</body>
+</html>
