@@ -39,7 +39,28 @@ export class Application {
         this.apiUrl = url;
         await window.electronAPI.store.set("user", this.user);
         await window.electronAPI.store.set("apiUrl", url);
-        // console.log("User data saved", url);
+        console.log("User data saved", url);
+    }
+    async fetchResponseCache() {
+        if (!this.apiUrl || !this.user.key) {
+            return "<p>User or API URL not configured.</p>";
+        }
+        const thisURL = this.apiUrl + `/getresponses`; 
+        try {
+            const response = await fetch(thisURL, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `${this.user.email}:${this.user.key}`
+                }
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return await response.text();
+        } catch (error) {
+            this.errors.push(`Error fetching response cache: ${error.message}`);
+            return `<p class="has-text-danger">Error fetching response cache: ${error.message}</p>`;
+        }
     }
 
     async fetchPastSearches(value) {
@@ -180,7 +201,6 @@ export class Application {
             const progress = Math.ceil((end / file.size) * 100);
             let progressBar = `<progress class="progress" value="${progress}" max="100"></progress>`;
             try {
-                console.log("working on file", file.name, encodeURIComponent(file.name))
                 const response = await fetch(thisURL, {
                     method: 'POST',
                     headers: {

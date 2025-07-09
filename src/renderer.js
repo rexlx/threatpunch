@@ -19,8 +19,10 @@ const backButtonServices = document.getElementById("backButtonServices");
 const backButtonProfile = document.getElementById("backButtonProfile");
 const notificationContainer = document.getElementById("notificationContainer");
 const sidebarSearch = document.getElementById("sidebarSearch");
+const sidebarRecentActivity = document.getElementById("sidebarRecentActivity");
 const sidebarServices = document.getElementById("sidebarServices");
 const sidebarProfile = document.getElementById("sidebarProfile");
+const sidebarLinks = [sidebarSearch, sidebarRecentActivity, sidebarServices, sidebarProfile];
 
 function showView(viewToShow) {
     allViews.forEach(view => {
@@ -32,120 +34,47 @@ function showView(viewToShow) {
     }
 }
 
-function renderSearchForm() {
-    notificationContainer.innerHTML = '';
-    notificationContainer.classList.remove('is-sticky-top');
-    matchBox.innerHTML = `
-        <h1 class="title has-text-info">Search</h1>
-        <form action="">
-            <div class="field">
-                <div class="control">
-                    <textarea class="textarea" placeholder="Feed me data..." id="userSearch"></textarea>
-                </div>
-            </div>
-            <div class="field">
-                <div class="control">
-                    <button class="button is-info is-outlined" id="searchButton" type="submit">Search</button>
-                </div>
-            </div>
-            <div class="field">
-                <div class="control">
-                    <div class="buttons are-small">
-                        <button class="button is-black has-text-info-light" id="historyButton">history</button>
-                        <button class="button is-black has-text-info-light" id="goToButton">go to</button>
-                        <button class="button is-black has-text-info-light" id="uploadButton">upload</button>
-                    </div>
-                </div>
-            </div>
-        </form>
-    `;
-    attachSearchFormListeners();
+function setActiveSidebar(activeLink) {
+    sidebarLinks.forEach(link => {
+        if (link) {
+            link.classList.remove('is-active');
+        }
+    });
+    if (activeLink) {
+        activeLink.classList.add('is-active');
+    }
 }
 
-function attachSearchFormListeners() {
-    const searchButton = document.getElementById('searchButton');
-    const historyButton = document.getElementById('historyButton');
-    const goToButton = document.getElementById('goToButton');
-    const uploadButton = document.getElementById('uploadButton');
-
-    if (searchButton) {
-        searchButton.addEventListener('click', async (event) => {
-            event.preventDefault();
-            application.results = []; 
-            
-            const userSearch = document.getElementById('userSearch');
-            if (!userSearch) return; 
-            const searchText = userSearch.value;
-
-            notificationContainer.innerHTML = '';
-
-            matchBox.innerHTML = "<p>Parsing text... searching...</p><progress class='progress is-primary'></progress>";
-
-            const allMatches = Object.keys(contextualizer.expressions).map(key => {
-                let matches = contextualizer.getMatches(searchText, contextualizer.expressions[key]);
-                return { type: key, matches: [...new Set(matches)] };
-            });
-
-            for (let svr of application.user.services) {
-                for (let matchPair of allMatches) {
-                    if (svr.type.includes(matchPair.type)) {
-                        const route = getRouteByType(svr.route_map, matchPair.type);
-                        handleMatches(svr.kind, matchPair, route);
-                    }
-                }
-            }
-        });
+function renderSearchForm() {
+    if(notificationContainer) {
+        notificationContainer.innerHTML = '';
+        notificationContainer.classList.remove('is-sticky-top');
     }
-
-    if (historyButton) {
-        historyButton.addEventListener('click', (event) => {
-            event.preventDefault();
-            showView(mainSection);
-            renderResultCards(application.resultHistory, true);
-        });
-    }
-
-    if (goToButton) {
-        goToButton.addEventListener('click', (event) => {
-            event.preventDefault();
-            matchBox.innerHTML = `
+    if(matchBox) {
+        matchBox.innerHTML = `
+            <h1 class="title has-text-info">Search</h1>
+            <form action="">
                 <div class="field">
-                    <label class="label has-text-info">Enter ID</label>
-                    <div class="control"><input class="input" type="text" placeholder="ID" id="goToValue"></div>
-                    <div class="control"><button class="button is-primary mt-2" id="goButton">Go</button></div>
-                </div>`;
-            
-            const goButton = document.getElementById('goButton');
-            if (goButton) {
-                goButton.addEventListener('click', async () => {
-                    const id = document.getElementById("goToValue").value;
-                    try {
-                        await application.fetchDetails(id);
-                        window.electronAPI.createDetailsWindow({
-                            details: application.focus,
-                            title: `Details for ${id}`
-                        });
-                    } catch (error) {
-                        application.errors.push(error.toString());
-                    }
-                });
-            }
-        });
-    }
-
-    if (uploadButton) {
-        uploadButton.addEventListener('click', (event) => {
-            event.preventDefault();
-            const fileInput = document.createElement("input");
-            fileInput.type = "file";
-            fileInput.addEventListener("change", async () => {
-                const file = fileInput.files[0];
-                if (!file) return;
-                const newFile = new File([file], makeUnique(file.name), { type: file.type });
-                await application.uploadFile(newFile);
-            });
-            fileInput.click();
-        });
+                    <div class="control">
+                        <textarea class="textarea" placeholder="feed me..." id="userSearch"></textarea>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="control">
+                        <button class="button is-info is-outlined" id="searchButton" type="submit">Search</button>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="control">
+                        <div class="buttons are-small">
+                            <button class="button is-black has-text-info-light" id="historyButton">history</button>
+                            <button class="button is-black has-text-info-light" id="goToButton">go to</button>
+                            <button class="button is-black has-text-info-light" id="uploadButton">upload</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        `;
     }
 }
 
@@ -173,6 +102,79 @@ function attachEventListeners() {
         checkUser(); 
     });
 
+    matchBox.addEventListener('click', async (event) => {
+        const targetId = event.target.id;
+
+        if (targetId === 'searchButton') {
+            event.preventDefault();
+            application.results = []; 
+            
+            const userSearch = document.getElementById('userSearch');
+            if (!userSearch) return; 
+            const searchText = userSearch.value;
+
+            if(notificationContainer) notificationContainer.innerHTML = '';
+
+            matchBox.innerHTML = "<p>Parsing text... searching...</p><progress class='progress is-primary'></progress>";
+
+            const allMatches = Object.keys(contextualizer.expressions).map(key => {
+                let matches = contextualizer.getMatches(searchText, contextualizer.expressions[key]);
+                return { type: key, matches: [...new Set(matches)] };
+            });
+
+            for (let svr of application.user.services) {
+                for (let matchPair of allMatches) {
+                    if (svr.type.includes(matchPair.type)) {
+                        const route = getRouteByType(svr.route_map, matchPair.type);
+                        handleMatches(svr.kind, matchPair, route);
+                    }
+                }
+            }
+        }
+
+        if (targetId === 'historyButton') {
+            event.preventDefault();
+            showView(mainSection);
+            renderResultCards(application.resultHistory, true);
+        }
+
+        if (targetId === 'goToButton') {
+             event.preventDefault();
+            matchBox.innerHTML = `
+                <div class="field">
+                    <label class="label has-text-info">Enter ID</label>
+                    <div class="control"><input class="input" type="text" placeholder="ID" id="goToValue"></div>
+                    <div class="control"><button class="button is-primary mt-2" id="goButton">Go</button></div>
+                </div>`;
+        }
+
+        if(targetId === 'goButton') {
+            const id = document.getElementById("goToValue").value;
+            try {
+                await application.fetchDetails(id);
+                window.electronAPI.createDetailsWindow({
+                    details: application.focus,
+                    title: `Details for ${id}`
+                });
+            } catch (error) {
+                application.errors.push(error.toString());
+            }
+        }
+
+        if (targetId === 'uploadButton') {
+            const fileInput = document.createElement("input");
+            fileInput.type = "file";
+            fileInput.addEventListener("change", async () => {
+                const file = fileInput.files[0];
+                if (!file) return;
+                const newFile = new File([file], makeUnique(file.name), { type: file.type });
+                await application.uploadFile(newFile);
+            });
+            fileInput.click();
+        }
+    });
+
+
     backButtonServices.addEventListener('click', (e) => {
         e.preventDefault();
         showView(mainSection);
@@ -186,26 +188,61 @@ function attachEventListeners() {
     
     sidebarSearch.addEventListener('click', (e) => {
         e.preventDefault();
+        setActiveSidebar(e.target);
         showView(mainSection);
         renderSearchForm();
     });
 
+    sidebarRecentActivity.addEventListener('click', async (e) => {
+        e.preventDefault();
+        setActiveSidebar(e.target);
+        showView(mainSection);
+        if(notificationContainer) notificationContainer.innerHTML = '';
+        matchBox.innerHTML = '<p class="has-text-info">Fetching response cache...</p>';
+        const cacheHtml = await application.fetchResponseCache();
+        matchBox.innerHTML = cacheHtml;
+
+        const links = matchBox.querySelectorAll('a');
+        links.forEach(link => {
+            link.addEventListener('click', async (event) => {
+                event.preventDefault();
+                const href = link.getAttribute('href');
+                const id = href.split('/').pop();
+                if (id) {
+                    try {
+                        await application.fetchDetails(id);
+                        window.electronAPI.createDetailsWindow({
+                            details: application.focus,
+                            title: `Details for ${id}`
+                        });
+                    } catch (error) {
+                        application.errors.push(error.toString());
+                    }
+                }
+            });
+        });
+    });
+
     sidebarServices.addEventListener('click', (e) => {
         e.preventDefault();
+        setActiveSidebar(e.target);
         navigateToServices();
     });
 
     sidebarProfile.addEventListener('click', (e) => {
         e.preventDefault();
+        setActiveSidebar(e.target);
         navigateToProfile();
     });
 
     window.electronAPI.onNavigate(async (page) => {
         switch (page) {
             case 'services':
+                setActiveSidebar(sidebarServices);
                 navigateToServices();
                 break;
             case 'profile':
+                setActiveSidebar(sidebarProfile);
                 navigateToProfile();
                 break;
         }
@@ -234,6 +271,7 @@ const navigateToProfile = () => {
 };
 
 function displayPastSearchesNotification(pastSearches, value) {
+    if(!notificationContainer) return;
     notificationContainer.innerHTML = '';
     notificationContainer.classList.add('is-sticky-top');
 
