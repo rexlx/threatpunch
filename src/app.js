@@ -39,7 +39,7 @@ export class Application {
         this.apiUrl = url;
         await window.electronAPI.store.set("user", this.user);
         await window.electronAPI.store.set("apiUrl", url);
-        console.log("User data saved", url);
+        // console.log("User data saved", url);
     }
 
     async fetchPastSearches(value) {
@@ -50,7 +50,7 @@ export class Application {
             "value": value || "",
         }
         const thisURL = this.apiUrl + `previous-responses`;
-        console.log("Fetching past searches from:", thisURL, "with value:", valueRequest.value);
+        // console.log("Fetching past searches from:", thisURL, "with value:", valueRequest.value);
         try {
             const response = await fetch(thisURL, {
                 method: 'POST',
@@ -180,11 +180,12 @@ export class Application {
             const progress = Math.ceil((end / file.size) * 100);
             let progressBar = `<progress class="progress" value="${progress}" max="100"></progress>`;
             try {
+                console.log("working on file", file.name, encodeURIComponent(file.name))
                 const response = await fetch(thisURL, {
                     method: 'POST',
                     headers: {
                         'Content-Range': `bytes ${start}-${end - 1}/${file.size}`,
-                        'X-filename': file.name,
+                        'X-filename': encodeURIComponent(file.name),
                         'X-last-chunk': currentChunk === Math.ceil(file.size / chunkSize) - 1,
                         'Authorization': `${this.user.email}:${this.user.key}`
                     },
