@@ -3,33 +3,34 @@
 
 <head>
     <meta charset="UTF-8">
-    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' http://localhost:8081 http://fairlady:8081">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="styles/bulma.min.css">
     <link rel="stylesheet" href="styles/custom.css">
     <title>ThreatPunch</title>
+    <style>
+        .is-sticky-top {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+    </style>
 </head>
 
 <body>
-<!-- The Login Screen section has been completely removed -->
 
 <section class="section has-background-black" id="errata">
-    <div class="container" id="errors" style="max-height: 200px; overflow-y: scroll;"><p class="has-text-primary">System nominal</p></div>
+    <div class="container" id="errors" style="max-height: 200px; overflow-y: scroll;"><p class="has-text-success">System nominal</p></div>
 </section>
 
-<!--MAIN-->
 <section class="section has-background-black" id="mainSection">
-    <!-- The mainColumns div now contains the sidebar and the content area -->
     <div class="columns" id="mainColumns">
-        <!-- Sidebar Column -->
         <div class="column is-one-quarter">
             <aside class="menu">
                 <p class="menu-label has-text-grey-light">
                     Actions
                 </p>
                 <ul class="menu-list">
-                    <!-- This link will reset the view to the search form -->
                     <li><a id="sidebarSearch" class="is-active">Search</a></li>
                 </ul>
                 <p class="menu-label has-text-grey-light">
@@ -41,17 +42,14 @@
                 </ul>
             </aside>
         </div>
-        <!-- Content Column -->
         <div class="column">
-            <!-- The matchBox is now the container for dynamic content (search, results, etc.) -->
+            <div id="notificationContainer" class="mb-4"></div>
             <div class="box has-background-custom" id="matchBox">
-                <!-- Content is now dynamically inserted by renderer.js -->
             </div>
         </div>
     </div>
 </section>
 
-<!--SERVICES-->
 <section class="section has-background-custom" id="servicesView">
     <div class="container">
         <div class="block">
@@ -67,7 +65,6 @@
     </div>
 </section>
 
-<!--PROFILE-->
 <section class="section has-background-custom" id="profileView">
     <div class="columns">
         <div class="column">

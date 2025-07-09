@@ -1,11 +1,10 @@
 import { Application } from "./app.js";
 import { Contextualizer } from "./parser.js";
 
-const apiUrl = "http://fairlady:8081/"; // This is just a default
+const apiUrl = "http://fairlady:8081/";
 let application = new Application(apiUrl, "none");
 let contextualizer = new Contextualizer();
 
-// --- DOM Elements ---
 const allViews = document.querySelectorAll('body > .section');
 const matchBox = document.getElementById("matchBox");
 const mainSection = document.getElementById("mainSection");
@@ -18,33 +17,24 @@ const editUserEmail = document.getElementById("editUserEmail");
 const editUserKey = document.getElementById("editUserKey");
 const backButtonServices = document.getElementById("backButtonServices");
 const backButtonProfile = document.getElementById("backButtonProfile");
-// Sidebar links
+const notificationContainer = document.getElementById("notificationContainer");
 const sidebarSearch = document.getElementById("sidebarSearch");
 const sidebarServices = document.getElementById("sidebarServices");
 const sidebarProfile = document.getElementById("sidebarProfile");
 
-
-// --- UI State & Initialization ---
-
-/**
- * Hides all view sections and then shows the one specified by the element.
- * @param {HTMLElement} viewToShow The section element to make visible.
- */
 function showView(viewToShow) {
     allViews.forEach(view => {
         view.style.display = 'none';
     });
-    // The errata bar should always be visible
     document.getElementById('errata').style.display = 'block';
     if(viewToShow) {
         viewToShow.style.display = 'block';
     }
 }
 
-/**
- * Renders the initial search form into the matchBox container.
- */
 function renderSearchForm() {
+    notificationContainer.innerHTML = '';
+    notificationContainer.classList.remove('is-sticky-top');
     matchBox.innerHTML = `
         <h1 class="title has-text-info">Search</h1>
         <form action="">
@@ -71,51 +61,42 @@ function renderSearchForm() {
     `;
 }
 
-
-/**
- * Checks if essential user data is present.
- * If so, shows the main app. If not, shows the profile/settings screen.
- */
 function checkUser() {
     if (application.user && application.user.key && application.apiUrl) {
         showView(mainSection);
-        renderSearchForm(); // Show the search form by default
+        renderSearchForm(); 
     } else {
-        editUserEmail.value = application.user.email || '';
-        editUserKey.value = application.user.key || '';
-        editServerUrl.value = application.apiUrl || '';
-        showView(profileView);
+        navigateToProfile();
     }
 }
 
-// Main application entry point
 async function main() {
-    showView(null); // Hide all views initially
-    await application.init(); // Asynchronously load data from the store
-    checkUser(); // Update the UI based on loaded data
-    attachEventListeners(); // Attach all event listeners
-    requestAnimationFrame(updateUI); // Start the UI update loop
+    showView(null); 
+    await application.init(); 
+    checkUser(); 
+    attachEventListeners(); 
+    requestAnimationFrame(updateUI); 
 }
 
 function attachEventListeners() {
-    // The "Update" button on the profile screen is now the main way to save settings.
     updateUserButton.addEventListener("click", async () => {
         await application.setUserData(editUserEmail.value, editUserKey.value, editServerUrl.value);
         await application.init();
-        checkUser(); // Re-check the user data to see if we can move to the main screen.
+        checkUser(); 
     });
 
-    // Use event delegation for the matchBox since its content is dynamic
     matchBox.addEventListener('click', async (event) => {
         const targetId = event.target.id;
 
         if (targetId === 'searchButton') {
             event.preventDefault();
-            application.results = []; // Clear previous results
+            application.results = []; 
             
             const userSearch = document.getElementById('userSearch');
             if (!userSearch) return; 
             const searchText = userSearch.value;
+
+            notificationContainer.innerHTML = '';
 
             matchBox.innerHTML = "<p>Parsing text... searching...</p><progress class='progress is-primary'></progress>";
 
@@ -154,8 +135,6 @@ function attachEventListeners() {
             const id = document.getElementById("goToValue").value;
             try {
                 await application.fetchDetails(id);
-                // --- THIS IS THE FIX ---
-                // Use the new, secure method to create the details window
                 window.electronAPI.createDetailsWindow({
                     details: application.focus,
                     title: `Details for ${id}`
@@ -190,33 +169,11 @@ function attachEventListeners() {
         }
     });
     
-    // --- Sidebar Navigation ---
     sidebarSearch.addEventListener('click', (e) => {
         e.preventDefault();
         showView(mainSection);
         renderSearchForm();
     });
-
-    const navigateToServices = async () => {
-        if (application.user && application.user.key && application.apiUrl) {
-            await application.getServices();
-            showView(serviceView);
-            const cardList = document.getElementById('cardList');
-            cardList.innerHTML = '';
-            application.servers.forEach(data => {
-                data.checked = application.user.services?.some(s => s.kind === data.kind) || false;
-                const cardElement = createServiceCard(data);
-                cardList.appendChild(cardElement);
-            });
-        }
-    };
-
-    const navigateToProfile = () => {
-        editUserEmail.value = application.user.email || '';
-        editUserKey.value = application.user.key || '';
-        editServerUrl.value = application.apiUrl || '';
-        showView(profileView);
-    };
 
     sidebarServices.addEventListener('click', (e) => {
         e.preventDefault();
@@ -228,8 +185,6 @@ function attachEventListeners() {
         navigateToProfile();
     });
 
-
-    // --- Listen for Top Menu Bar Navigation ---
     window.electronAPI.onNavigate(async (page) => {
         switch (page) {
             case 'services':
@@ -242,8 +197,64 @@ function attachEventListeners() {
     });
 }
 
+const navigateToServices = async () => {
+    if (application.user && application.user.key && application.apiUrl) {
+        await application.getServices();
+        showView(serviceView);
+        const cardList = document.getElementById('cardList');
+        cardList.innerHTML = '';
+        application.servers.forEach(data => {
+            data.checked = application.user.services?.some(s => s.kind === data.kind) || false;
+            const cardElement = createServiceCard(data);
+            cardList.appendChild(cardElement);
+        });
+    }
+};
+
+const navigateToProfile = () => {
+    editUserEmail.value = application.user.email || '';
+    editUserKey.value = application.user.key || '';
+    editServerUrl.value = application.apiUrl || '';
+    showView(profileView);
+};
+
+function displayPastSearchesNotification(pastSearches, value) {
+    notificationContainer.innerHTML = '';
+    notificationContainer.classList.add('is-sticky-top');
+
+    const sixtySecondsAgo = new Date(Date.now() - 60000);
+    const relevantPastSearches = pastSearches.filter(s => new Date(s.timestamp) < sixtySecondsAgo);
+
+    const notification = document.createElement('div');
+    const deleteButton = document.createElement('button');
+    deleteButton.className = 'delete';
+    deleteButton.onclick = () => {
+        notificationContainer.innerHTML = '';
+        notificationContainer.classList.remove('is-sticky-top');
+    };
+    notification.appendChild(deleteButton);
+
+    const message = document.createElement('p');
+
+    if (relevantPastSearches.length === 0) {
+        notification.className = 'notification is-success is-light';
+        message.innerHTML = `No relevant past searches found for "<strong>${escapeHtml(value)}</strong>".`;
+    } else {
+        const uniqueUsers = [...new Set(relevantPastSearches.map(s => s.from).filter(Boolean))];
+        notification.className = 'notification is-info is-light';
+        if (uniqueUsers.length === 0) {
+            message.innerHTML = `Past searches for "<strong>${escapeHtml(value)}</strong>" were found, but with no user information.`;
+        } else {
+            message.innerHTML = `${escapeHtml(uniqueUsers.join(', '))}; past searches for "<strong>${escapeHtml(value)}</strong>".`;
+        }
+    }
+
+    notification.appendChild(message);
+    notificationContainer.appendChild(notification);
+}
+
 function renderResultCards(resultsArray, isHistoryView = false) {
-    matchBox.innerHTML = ""; // Clear previous content
+    matchBox.innerHTML = ""; 
     if (resultsArray.length === 0) {
         matchBox.innerHTML = `<p class="has-text-info">${isHistoryView ? 'History is empty.' : 'No results found.'}</p>`;
         return;
@@ -252,7 +263,6 @@ function renderResultCards(resultsArray, isHistoryView = false) {
     resultsArray.sort((a, b) => (b.matched || 0) - (a.matched || 0));
 
     for (const result of resultsArray) {
-        const uniq = `details-${result.link}`;
         const article = document.createElement('article');
         article.className = 'message is-dark';
 
@@ -264,15 +274,7 @@ function renderResultCards(resultsArray, isHistoryView = false) {
 
         const fromParagraph = document.createElement('p');
         fromParagraph.textContent = escapeHtml(result.from);
-
-        const viewButton = document.createElement('button');
-        viewButton.className = 'button is-link is-outlined view-button';
-        viewButton.id = uniq;
-        viewButton.textContent = 'view';
-        viewButton.disabled = !result.link || result.link === "none";
-
         header.appendChild(fromParagraph);
-        header.appendChild(viewButton);
 
         const body = document.createElement('div');
         body.className = 'message-body has-background-dark-ter';
@@ -291,16 +293,32 @@ function renderResultCards(resultsArray, isHistoryView = false) {
         addMessageBodyParagraph('Threat Level', result.threat_level_id);
         addMessageBodyParagraph('Info', result.info);
 
-        article.appendChild(header);
-        article.appendChild(body);
-        matchBox.appendChild(article);
+        const footer = document.createElement('footer');
+        footer.className = 'card-footer';
 
+        const historyButton = document.createElement('a');
+        historyButton.href = '#';
+        historyButton.className = 'card-footer-item has-background-black has-text-info';
+        historyButton.textContent = 'Past Searches';
+        historyButton.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const pastSearches = await application.fetchPastSearches(result.value);
+            displayPastSearchesNotification(pastSearches, result.value);
+        });
+
+        const viewButton = document.createElement('a');
+        viewButton.href = '#';
+        viewButton.className = 'card-footer-item has-background-black has-text-info';
+        viewButton.textContent = 'View Details';
+        if (!result.link || result.link === "none") {
+            viewButton.classList.add('is-disabled');
+        }
         viewButton.addEventListener('click', async (e) => {
-            const thisLink = e.target.id.replace("details-", "");
+            e.preventDefault();
+            const thisLink = result.link;
+            if (!thisLink || thisLink === "none") return;
             try {
                 await application.fetchDetails(thisLink);
-                // --- THIS IS THE FIX ---
-                // Use the new, secure method to create the details window
                 window.electronAPI.createDetailsWindow({
                     details: application.focus,
                     title: `Details for ${thisLink}`
@@ -309,42 +327,51 @@ function renderResultCards(resultsArray, isHistoryView = false) {
                 application.errors.push(error.toString());
             }
         });
+
+        footer.appendChild(historyButton);
+        footer.appendChild(viewButton);
+
+        article.appendChild(header);
+        article.appendChild(body);
+        article.appendChild(footer);
+        matchBox.appendChild(article);
     }
 
-    // --- Action Buttons ---
-    const buttonContainer = document.createElement('div');
-    buttonContainer.className = 'buttons mt-4';
+    const footerContainer = document.createElement('footer');
+    footerContainer.className = 'card-footer mt-4';
 
-    // Download Button
-    const downloadButton = document.createElement('button');
-    downloadButton.className = 'button is-primary';
+    const downloadButton = document.createElement('a');
+    downloadButton.href = '#';
+    downloadButton.className = 'card-footer-item has-background-primary has-text-black';
     downloadButton.textContent = 'Download CSV';
-    downloadButton.addEventListener("click", () => application.saveResultsToCSV(isHistoryView));
+    downloadButton.addEventListener("click", (e) => {
+        e.preventDefault();
+        application.saveResultsToCSV(isHistoryView);
+    });
     
-    // Clear Button
-    const clearButton = document.createElement('button');
-    clearButton.className = 'button is-warning is-outlined';
+    const clearButton = document.createElement('a');
+    clearButton.href = '#';
+    clearButton.className = 'card-footer-item has-background-primary has-text-black';
     clearButton.textContent = isHistoryView ? 'Clear History' : 'Clear Results';
     clearButton.addEventListener('click', (e) => {
         e.preventDefault();
         if (isHistoryView) {
             application.resultHistory = [];
-            application.setHistory(); // Persist the empty history
+            application.setHistory(); 
         }
         application.results = [];
         previousResults = [];
         renderSearchForm();
     });
 
-    buttonContainer.appendChild(downloadButton);
-    buttonContainer.appendChild(clearButton);
-    matchBox.appendChild(buttonContainer);
+    footerContainer.appendChild(downloadButton);
+    footerContainer.appendChild(clearButton);
+    matchBox.appendChild(footerContainer);
 }
 
 
 let previousResults = [];
 async function updateUI() {
-    // Error display
     if (application.errors.length > 0) {
         errorBox.innerHTML = '';
         const errors = [...new Set(application.errors)];
@@ -358,8 +385,6 @@ async function updateUI() {
         errorBox.innerHTML = '<p class="has-text-success">System nominal</p>';
     }
 
-
-    // Results display
     try {
         if (application.results.length > 0 && JSON.stringify(application.results) !== JSON.stringify(previousResults)) {
             previousResults = [...application.results];
@@ -457,8 +482,6 @@ function createServiceCard(service) {
     return column;
 }
 
-
-// --- Utility Functions ---
 function escapeHtml(unsafe) {
     if (typeof unsafe !== 'string') return '';
     return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
@@ -485,5 +508,4 @@ function isPrivateIP(ip) {
     return false;
 }
 
-// Start the application
 main();

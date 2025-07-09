@@ -1,30 +1,30 @@
-// main.js - Main Process
+
 
 const { app, BrowserWindow, shell, ipcMain, dialog, Menu } = require('electron');
 const path = require('path');
 const Store = require('electron-store');
 
-// Initialize the store in the main process
+
 const store = new Store();
 
 function createMainWindow() {
-  // Create the browser window.
+  
   const mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
     webPreferences: {
-      // Attach the preload script
+      
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
       contextIsolation: true,
     },
   });
 
-  // --- Create the Application Menu ---
+  
   const isMac = process.platform === 'darwin';
 
   const menuTemplate = [
-    // { role: 'appMenu' } (on macOS)
+    
     ...(isMac ? [{
       label: app.name,
       submenu: [
@@ -39,14 +39,14 @@ function createMainWindow() {
         { role: 'quit' }
       ]
     }] : []),
-    // { role: 'fileMenu' }
+    
     {
       label: 'File',
       submenu: [
         isMac ? { role: 'close' } : { role: 'quit' }
       ]
     },
-    // { role: 'editMenu' }
+    
     {
       label: 'Edit',
       submenu: [
@@ -75,7 +75,7 @@ function createMainWindow() {
         ])
       ]
     },
-    // { role: 'viewMenu' }
+    
     {
       label: 'View',
       submenu: [
@@ -99,7 +99,7 @@ function createMainWindow() {
         { role: 'toggleDevTools' },
       ]
     },
-    // { role: 'windowMenu' }
+    
     {
       label: 'Window',
       submenu: [
@@ -120,10 +120,10 @@ function createMainWindow() {
   const menu = Menu.buildFromTemplate(menuTemplate);
   Menu.setApplicationMenu(menu);
 
-  // and load the index.html of the app.
+  
   mainWindow.loadFile('index.html');
 
-  // Open external links in the default browser
+  
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
     return { action: 'deny' };
@@ -146,9 +146,9 @@ app.on('window-all-closed', () => {
   }
 });
 
-// --- IPC Handlers ---
 
-// IPC for the Store
+
+
 ipcMain.handle('electron-store-get', async (event, key) => {
   return store.get(key);
 });
@@ -157,7 +157,7 @@ ipcMain.handle('electron-store-set', async (event, key, val) => {
 });
 
 
-// IPC for saving files
+
 ipcMain.handle('save-file', async (event, { filename, content }) => {
   const { filePath } = await dialog.showSaveDialog({
     defaultPath: filename,
@@ -176,25 +176,23 @@ ipcMain.handle('save-file', async (event, { filename, content }) => {
   }
 });
 
-// --- THIS IS THE FIX FOR THE SECURITY WARNING ---
-// IPC for creating the new, secure details window
 ipcMain.handle('create-details-window', (event, { details, title }) => {
     const win = new BrowserWindow({
         width: 800,
         height: 600,
         title: title,
         webPreferences: {
-            // Important: The preload script must be specified for all new windows
+            
             preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
             nodeIntegration: false,
         }
     });
 
-    // Load the new HTML file instead of a data URL
+    
     win.loadFile('details.html');
 
-    // Send the data to the window once it has finished loading and is ready to receive it
+    
     win.webContents.on('did-finish-load', () => {
         win.webContents.send('details-data', details);
     });

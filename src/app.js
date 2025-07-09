@@ -1,13 +1,10 @@
-// This file should have no 'require' statements.
-// All Node.js/Electron functionality is accessed via the preload script.
-
 export class Application {
     constructor(apiUrl, apiKey) {
         this.user = {};
         this.resultWorkers = [];
         this.results = [];
         this.errors = [];
-        this.apiUrl = apiUrl; // Will be overwritten by stored value
+        this.apiUrl = apiUrl;
         this.apiKey = apiKey;
         this.servers = [];
         this.resultHistory = [];
@@ -15,27 +12,21 @@ export class Application {
         this.initialized = false;
     }
 
-    // Initialization now needs to be async to load from the store
     async init() {
         const storedApiUrl = await window.electronAPI.store.get("apiUrl");
         if (storedApiUrl) {
-            console.log("Using stored API URL:", storedApiUrl);
-            // this.apiUrl = storedApiUrl;
-            // this.apiUrl = "http://fairlady:8081/";
+            this.apiUrl = storedApiUrl;
         } else {
-            // this.errors.push("No API URL found in storage.");
-            // this.apiUrl = "http://fairlady:8081/";
+            this.apiUrl = "http://fairlady:8081/";
         }
 
         const storedUser = await window.electronAPI.store.get("user");
         if (storedUser) {
-            console.log("Using stored user data:", storedUser);
             this.user = storedUser;
         }
 
         await this.fetchHistory();
         if (this.user.email && this.user.key) {
-            console.log("User data is valid, fetching user and services.", this.user.email, this.user.key);
             await this.fetchUser();
             await this.getServices();
         }
@@ -49,6 +40,37 @@ export class Application {
         await window.electronAPI.store.set("user", this.user);
         await window.electronAPI.store.set("apiUrl", url);
         console.log("User data saved", url);
+    }
+
+    async fetchPastSearches(value) {
+        if (!this.apiUrl || !this.user.key) {
+            return [];
+        }
+        let valueRequest = {
+            "value": value || "",
+        }
+        const thisURL = this.apiUrl + `previous-responses`;
+        console.log("Fetching past searches from:", thisURL, "with value:", valueRequest.value);
+        try {
+            const response = await fetch(thisURL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `${this.user.email}:${this.user.key}`
+                },
+                body: JSON.stringify(valueRequest)
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            this.errors.push(`Error fetching past searches: ${error.message}`);
+            return [];
+        }
     }
 
     addService(service) {
@@ -95,8 +117,6 @@ export class Application {
             const history = await window.electronAPI.store.get("history");
             if (history && Array.isArray(history)) {
                 this.resultHistory = history;
-            } else {
-                // this.errors.push("No history found in storage.");
             }
         } catch (err) {
             this.errors.push("Error fetching history: " + err);
@@ -150,7 +170,7 @@ export class Application {
     }
     async uploadFile(file) {
         const thisURL = this.apiUrl + `upload`;
-        const chunkSize = 1024 * 1024; // 1MB
+        const chunkSize = 1024 * 1024;
         let currentChunk = 0;
 
         const uploadChunk = async () => {
@@ -179,7 +199,7 @@ export class Application {
                     if (currentChunk < Math.ceil(file.size / chunkSize)) {
                         this.errors = [];
                         this.errors.push(progressBar);
-                        uploadChunk(); // Recursive call for next chunk
+                        uploadChunk();
                     } else {
                         let progressBar = `<p class="has-text-info">uploaded ${file.name}</p>`;
                         this.errors = [];
@@ -208,19 +228,17 @@ export class Application {
             }
         };
 
-        uploadChunk(); // Start the upload
+        uploadChunk();
     }
     async fetchUser() {
         if(!this.user.email || !this.user.key) return;
         let thisURL = this.apiUrl + `user`
-        let headers = {
-            'Content-Type': 'application/json',
-            'Authorization': `${this.user.email}:${this.user.key}`
-        };
-        console.log("Fetching user data from:", thisURL, headers);
         let response = await fetch(thisURL, {
             method: 'GET',
-            headers: headers
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `${this.user.email}:${this.user.key}`
+            }
         });
         let data = await response.json();
         this.user = data;

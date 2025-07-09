@@ -50,3 +50,28 @@ body {
   background-color: #000;
   color: #fff;
 }
+
+.menu-list a,
+.card-footer-item,
+.button {
+    transition: all 0.2s ease-in-out;
+}
+
+.menu-list a:hover {
+    background-color: #4a4a4a;
+    transform: translateX(5px);
+}
+
+.card-footer-item:hover {
+    filter: brightness(1.2);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.message:hover {
+    transform: scale(1.01);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+}
