@@ -67,9 +67,9 @@ function renderSearchForm() {
                 <div class="field">
                     <div class="control">
                         <div class="buttons are-small">
-                            <button class="button is-black has-text-info-light" id="historyButton">history</button>
-                            <button class="button is-black has-text-info-light" id="goToButton">go to</button>
-                            <button class="button is-black has-text-info-light" id="uploadButton">upload</button>
+                            <button type="button" class="button is-black has-text-info-light" id="historyButton">history</button>
+                            <button type="button" class="button is-black has-text-info-light" id="goToButton">go to</button>
+                            <button type="button" class="button is-black has-text-info-light" id="uploadButton">upload</button>
                         </div>
                     </div>
                 </div>
@@ -234,6 +234,20 @@ function attachEventListeners() {
             });
             fileInput.click();
         }
+
+        // The logic for the "Apply" filter button is now here, ensuring consistency.
+        if (targetId === 'applyResponseFilters') {
+            const vendor = document.getElementById('filterVendor').value;
+            const start = document.getElementById('filterStart').value;
+            const limit = document.getElementById('filterLimit').value; // FIX: Corrected element ID from 'limit'
+
+            const options = {};
+            if (vendor) options.vendor = vendor;
+            if (start) options.start = parseInt(start, 10);
+            if (limit) options.limit = parseInt(limit, 10);
+
+            handleResponseFetch(options);
+        }
     });
 
 
@@ -261,28 +275,12 @@ function attachEventListeners() {
         showView(mainSection);
         if (notificationContainer) notificationContainer.innerHTML = '';
     
-        // Render the filter UI into the matchBox
+        // Render the filter UI into the matchBox.
         matchBox.innerHTML = renderResponseFilters();
     
-        // Add an event listener for the new filter button
-        const filterButton = document.getElementById('applyResponseFilters');
-        if (filterButton) {
-            filterButton.addEventListener('click', () => {
-                const vendor = document.getElementById('filterVendor').value;
-                const start = document.getElementById('filterStart').value;
-                const limit = document.getElementById('filterLimit').value;
+        // The separate click listener has been removed from here.
     
-                const options = {};
-                if (vendor) options.vendor = vendor;
-                // Only add start/limit if they have a value, ensuring they are integers
-                if (start) options.start = parseInt(start, 10);
-                if (limit) options.limit = parseInt(limit, 10);
-    
-                handleResponseFetch(options);
-            });
-        }
-    
-        // Perform the initial fetch with default options
+        // Perform the initial fetch with default options.
         handleResponseFetch();
     });
 
