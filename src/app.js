@@ -41,21 +41,42 @@ export class Application {
         await window.electronAPI.store.set("apiUrl", url);
         console.log("User data saved", url);
     }
-    async fetchResponseCache() {
+    async fetchResponseCache(options = {}) {
         if (!this.apiUrl || !this.user.key) {
             return "<p>User or API URL not configured.</p>";
         }
-        const thisURL = this.apiUrl + `/getresponses`; 
+
+        // Base URL for the endpoint
+        const baseUrl = this.apiUrl + `/getresponses`;
+
+        // Use URLSearchParams to safely build the query string
+        const params = new URLSearchParams();
+        if (options.vendor) {
+            params.append('vendor', options.vendor);
+        }
+        if (options.start !== undefined) {
+            params.append('start', options.start);
+        }
+        if (options.limit !== undefined) {
+            params.append('limit', options.limit);
+        }
+
+        // Construct the final URL
+        const finalURL = `${baseUrl}?${params.toString()}`;
+        console.log(`Fetching from: ${finalURL}`); // For debugging
+
         try {
-            const response = await fetch(thisURL, {
+            const response = await fetch(finalURL, {
                 method: 'GET',
                 headers: {
                     'Authorization': `${this.user.email}:${this.user.key}`
                 }
             });
+
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
+
             return await response.text();
         } catch (error) {
             this.errors.push(`Error fetching response cache: ${error.message}`);
@@ -124,7 +145,7 @@ export class Application {
             let row = `${result.link || ''},${result.id || ''},${result.value || ''},${result.from || ''},${result.matched || ''},${result.info || ''}\n`;
             csvContent += row;
         });
-        
+
         const result = await window.electronAPI.saveFile({ filename: filename, content: csvContent });
         if (result.success) {
             this.errors.push(`File saved to ${result.path}`);
@@ -143,14 +164,14 @@ export class Application {
             this.errors.push("Error fetching history: " + err);
         }
     }
-    
+
     async setHistory() {
         if (this.resultHistory.length > 50) {
             this.resultHistory.splice(0, this.resultHistory.length - 50);
         }
         await window.electronAPI.store.set("history", this.resultHistory);
     }
-    
+
     async sendLog(message) {
         if (!this.apiUrl) {
             this.errors.push("API URL is not set. Cannot send log.");
@@ -252,7 +273,7 @@ export class Application {
         uploadChunk();
     }
     async fetchUser() {
-        if(!this.user.email || !this.user.key) return;
+        if (!this.user.email || !this.user.key) return;
         let thisURL = this.apiUrl + `user`
         let response = await fetch(thisURL, {
             method: 'GET',
@@ -323,7 +344,7 @@ export class Application {
         return data;
     }
     async getServices() {
-        if(!this.user.email || !this.user.key) return;
+        if (!this.user.email || !this.user.key) return;
         let thisURL = this.apiUrl + `getservices`
         try {
             let response = await fetch(thisURL, {
@@ -351,28 +372,28 @@ export class Application {
 
 function sanitizeService(service) {
     if (!service || typeof service !== 'object') {
-      return {
-        upload_service: false, expires: 0, secret: "", selected: false, insecure: false, name: "", url: "",
-        rate_limited: false, max_requests: 0, refill_rate: 0, auth_type: "", key: "", kind: "", type: [],
-        route_map: null, description: ""
-      };
+        return {
+            upload_service: false, expires: 0, secret: "", selected: false, insecure: false, name: "", url: "",
+            rate_limited: false, max_requests: 0, refill_rate: 0, auth_type: "", key: "", kind: "", type: [],
+            route_map: null, description: ""
+        };
     }
     return {
-      upload_service: Boolean(service.upload_service),
-      expires: Number.isInteger(service.expires) ? service.expires : 0,
-      secret: String(service.secret || ''),
-      selected: Boolean(service.selected),
-      insecure: Boolean(service.insecure),
-      name: String(service.name || '').replace(/[<>&"'`;]/g, ''),
-      url: String(service.url || '').startsWith('http') ? service.url : '',
-      rate_limited: Boolean(service.rate_limited),
-      max_requests: Number.isInteger(service.max_requests) ? service.max_requests : 0,
-      refill_rate: Number.isInteger(service.refill_rate) ? service.refill_rate : 0,
-      auth_type: String(service.auth_type || ''),
-      key: String(service.key || ''),
-      kind: String(service.kind || ''),
-      type: Array.isArray(service.type) ? service.type.map(String) : [],
-      route_map: service.route_map,
-      description: String(service.description || '').replace(/[<>&"'`;]/g, '')
+        upload_service: Boolean(service.upload_service),
+        expires: Number.isInteger(service.expires) ? service.expires : 0,
+        secret: String(service.secret || ''),
+        selected: Boolean(service.selected),
+        insecure: Boolean(service.insecure),
+        name: String(service.name || '').replace(/[<>&"'`;]/g, ''),
+        url: String(service.url || '').startsWith('http') ? service.url : '',
+        rate_limited: Boolean(service.rate_limited),
+        max_requests: Number.isInteger(service.max_requests) ? service.max_requests : 0,
+        refill_rate: Number.isInteger(service.refill_rate) ? service.refill_rate : 0,
+        auth_type: String(service.auth_type || ''),
+        key: String(service.key || ''),
+        kind: String(service.kind || ''),
+        type: Array.isArray(service.type) ? service.type.map(String) : [],
+        route_map: service.route_map,
+        description: String(service.description || '').replace(/[<>&"'`;]/g, '')
     }
 }

@@ -95,6 +95,68 @@ async function main() {
     requestAnimationFrame(updateUI); 
 }
 
+/**
+ * Renders the filter input fields for the response cache view.
+ * @returns {string} The HTML string for the filter form.
+ */
+function renderResponseFilters() {
+    return `
+        <h1 class="title has-text-info">Responses</h1>
+        <div class="field is-grouped">
+            <p class="control is-expanded">
+                <input class="input" type="text" id="filterVendor" placeholder="Vendor">
+            </p>
+            <p class="control">
+                <input class="input" type="number" id="filterStart" placeholder="Start (e.g., 0)">
+            </p>
+            <p class="control">
+                <input class="input" type="number" id="filterLimit" placeholder="Limit (e.g., 100)">
+            </p>
+            <p class="control">
+                <button class="button is-info" id="applyResponseFilters">Apply</button>
+            </p>
+        </div>
+        <hr class="has-background-grey-dark">
+        <div id="responseTableContainer">
+            <p class="has-text-info">Fetching initial responses...</p>
+        </div>
+    `;
+}
+
+/**
+ * Fetches response data with given options and renders it. Also attaches event listeners to links.
+ * @param {object} options - The filtering and pagination options for the API call.
+ */
+async function handleResponseFetch(options = {}) {
+    const container = document.getElementById('responseTableContainer');
+    if (!container) return;
+
+    container.innerHTML = '<p class="has-text-info">Fetching response cache...</p><progress class="progress is-small is-info" max="100"></progress>';
+    const cacheHtml = await application.fetchResponseCache(options);
+    container.innerHTML = cacheHtml;
+
+    const links = container.querySelectorAll('a');
+    links.forEach(link => {
+        link.addEventListener('click', async (event) => {
+            event.preventDefault();
+            const href = link.getAttribute('href');
+            const id = href.split('/').pop();
+            if (id) {
+                try {
+                    await application.fetchDetails(id);
+                    window.electronAPI.createDetailsWindow({
+                        details: application.focus,
+                        title: `Details for ${id}`
+                    });
+                } catch (error) {
+                    application.errors.push(error.toString());
+                }
+            }
+        });
+    });
+}
+
+
 function attachEventListeners() {
     updateUserButton.addEventListener("click", async () => {
         await application.setUserData(editUserEmail.value, editUserKey.value, editServerUrl.value);
@@ -197,30 +259,31 @@ function attachEventListeners() {
         e.preventDefault();
         setActiveSidebar(e.target);
         showView(mainSection);
-        if(notificationContainer) notificationContainer.innerHTML = '';
-        matchBox.innerHTML = '<p class="has-text-info">Fetching response cache...</p>';
-        const cacheHtml = await application.fetchResponseCache();
-        matchBox.innerHTML = cacheHtml;
-
-        const links = matchBox.querySelectorAll('a');
-        links.forEach(link => {
-            link.addEventListener('click', async (event) => {
-                event.preventDefault();
-                const href = link.getAttribute('href');
-                const id = href.split('/').pop();
-                if (id) {
-                    try {
-                        await application.fetchDetails(id);
-                        window.electronAPI.createDetailsWindow({
-                            details: application.focus,
-                            title: `Details for ${id}`
-                        });
-                    } catch (error) {
-                        application.errors.push(error.toString());
-                    }
-                }
+        if (notificationContainer) notificationContainer.innerHTML = '';
+    
+        // Render the filter UI into the matchBox
+        matchBox.innerHTML = renderResponseFilters();
+    
+        // Add an event listener for the new filter button
+        const filterButton = document.getElementById('applyResponseFilters');
+        if (filterButton) {
+            filterButton.addEventListener('click', () => {
+                const vendor = document.getElementById('filterVendor').value;
+                const start = document.getElementById('filterStart').value;
+                const limit = document.getElementById('filterLimit').value;
+    
+                const options = {};
+                if (vendor) options.vendor = vendor;
+                // Only add start/limit if they have a value, ensuring they are integers
+                if (start) options.start = parseInt(start, 10);
+                if (limit) options.limit = parseInt(limit, 10);
+    
+                handleResponseFetch(options);
             });
-        });
+        }
+    
+        // Perform the initial fetch with default options
+        handleResponseFetch();
     });
 
     sidebarServices.addEventListener('click', (e) => {
