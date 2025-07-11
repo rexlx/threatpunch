@@ -3,9 +3,12 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' http://localhost:8081 http://fairlady:8081">
+    <!-- Updated CSP to allow local fonts -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self' http://localhost:8081 http://fairlady:8081">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="styles/bulma.min.css">
+    <!-- Link to local Material Icons stylesheet -->
+    <link rel="stylesheet" href="styles/material-icons.css">
     <link rel="stylesheet" href="styles/custom.css">
     <title>ThreatPunch</title>
     <style>
@@ -13,6 +16,14 @@
             position: sticky;
             top: 0;
             z-index: 10;
+        }
+        /* Style for icons next to text in buttons/links */
+        .icon-text {
+            display: inline-flex;
+            align-items: center;
+        }
+        .icon-text .icon {
+            margin-right: 0.5em;
         }
     </style>
 </head>
@@ -31,15 +42,16 @@
                     Actions
                 </p>
                 <ul class="menu-list">
-                    <li><a id="sidebarSearch" class="is-active">search</a></li>
-                    <li><a id="sidebarRecentActivity">responses</a></li>
+                    <!-- Added icons to sidebar links -->
+                    <li><a id="sidebarSearch" class="is-active"><span class="icon-text"><span class="icon"><i class="material-icons">search</i></span><span>search</span></span></a></li>
+                    <li><a id="sidebarRecentActivity"><span class="icon-text"><span class="icon"><i class="material-icons">history</i></span><span>responses</span></span></a></li>
                 </ul>
                 <p class="menu-label has-text-grey-light">
                     Settings
                 </p>
                 <ul class="menu-list">
-                    <li><a id="sidebarServices">services</a></li>
-                    <li><a id="sidebarProfile">profile</a></li>
+                    <li><a id="sidebarServices"><span class="icon-text"><span class="icon"><i class="material-icons">dns</i></span><span>services</span></span></a></li>
+                    <li><a id="sidebarProfile"><span class="icon-text"><span class="icon"><i class="material-icons">person</i></span><span>profile</span></span></a></li>
                 </ul>
             </aside>
         </div>
@@ -57,8 +69,8 @@
              <h1 class="title has-text-info">services</h1>
         </div>
         <div class="block">
-            <button class="button is-info is-outlined" id="backButtonServices">
-                back
+            <button class="button is-info is-outlined" id="backButtonServices" type="button">
+                <span class="icon-text"><span class="icon"><i class="material-icons">arrow_back</i></span><span>back</span></span>
             </button>
         </div>
         <div id="cardList" class="columns is-multiline is-variable is-2-tablet is-3-desktop is-4-widescreen">
@@ -93,11 +105,11 @@
                 </br>
                     <div class="field">
                         <div class="control profileButtons" >
-                            <button class="button is-info is-pulled-left is-outlined" id="backButtonProfile">
-                                back
+                            <button class="button is-info is-pulled-left is-outlined" id="backButtonProfile" type="button">
+                                <span class="icon-text"><span class="icon"><i class="material-icons">arrow_back</i></span><span>back</span></span>
                               </button>
-                            <button class="button is-info is-outlined" id="updateUserButton">
-                                  <span>update</span>
+                            <button class="button is-info is-outlined" id="updateUserButton" type="button">
+                                  <span class="icon-text"><span class="icon"><i class="material-icons">save</i></span><span>update</span></span>
                             </button>
                         </div>
                     </div>

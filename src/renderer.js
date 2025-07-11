@@ -40,8 +40,9 @@ function setActiveSidebar(activeLink) {
             link.classList.remove('is-active');
         }
     });
+    // The activeLink might be the span or icon, so we find the parent 'a' tag.
     if (activeLink) {
-        activeLink.classList.add('is-active');
+        activeLink.closest('a').classList.add('is-active');
     }
 }
 
@@ -61,15 +62,23 @@ function renderSearchForm() {
                 </div>
                 <div class="field">
                     <div class="control">
-                        <button class="button is-info is-outlined" id="searchButton" type="submit">Search</button>
+                        <button class="button is-info is-outlined" id="searchButton" type="submit">
+                             <span class="icon-text"><span class="icon"><i class="material-icons">search</i></span><span>Search</span></span>
+                        </button>
                     </div>
                 </div>
                 <div class="field">
                     <div class="control">
                         <div class="buttons are-small">
-                            <button type="button" class="button is-black has-text-info-light" id="historyButton">history</button>
-                            <button type="button" class="button is-black has-text-info-light" id="goToButton">go to</button>
-                            <button type="button" class="button is-black has-text-info-light" id="uploadButton">upload</button>
+                            <button type="button" class="button is-black has-text-info-light" id="historyButton">
+                                <span class="icon-text"><span class="icon"><i class="material-icons">history</i></span><span>history</span></span>
+                            </button>
+                            <button type="button" class="button is-black has-text-info-light" id="goToButton">
+                                <span class="icon-text"><span class="icon"><i class="material-icons">double_arrow</i></span><span>go to</span></span>
+                            </button>
+                            <button type="button" class="button is-black has-text-info-light" id="uploadButton">
+                                <span class="icon-text"><span class="icon"><i class="material-icons">upload_file</i></span><span>upload</span></span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -113,7 +122,9 @@ function renderResponseFilters() {
                 <input class="input" type="number" id="filterLimit" placeholder="Limit (e.g., 100)">
             </p>
             <p class="control">
-                <button class="button is-info" id="applyResponseFilters">Apply</button>
+                <button class="button is-info" id="applyResponseFilters" type="button">
+                    <span class="icon-text"><span class="icon"><i class="material-icons">filter_list</i></span><span>Apply</span></span>
+                </button>
             </p>
         </div>
         <hr class="has-background-grey-dark">
@@ -165,7 +176,11 @@ function attachEventListeners() {
     });
 
     matchBox.addEventListener('click', async (event) => {
-        const targetId = event.target.id;
+        // Use .closest() to find the button if an icon or span inside it was clicked
+        const button = event.target.closest('button');
+        if (!button) return; // Exit if the click wasn't on or in a button
+
+        const targetId = button.id;
 
         if (targetId === 'searchButton') {
             event.preventDefault();
@@ -235,11 +250,10 @@ function attachEventListeners() {
             fileInput.click();
         }
 
-        // The logic for the "Apply" filter button is now here, ensuring consistency.
         if (targetId === 'applyResponseFilters') {
             const vendor = document.getElementById('filterVendor').value;
             const start = document.getElementById('filterStart').value;
-            const limit = document.getElementById('filterLimit').value; // FIX: Corrected element ID from 'limit'
+            const limit = document.getElementById('filterLimit').value; 
 
             const options = {};
             if (vendor) options.vendor = vendor;
@@ -275,12 +289,8 @@ function attachEventListeners() {
         showView(mainSection);
         if (notificationContainer) notificationContainer.innerHTML = '';
     
-        // Render the filter UI into the matchBox.
         matchBox.innerHTML = renderResponseFilters();
     
-        // The separate click listener has been removed from here.
-    
-        // Perform the initial fetch with default options.
         handleResponseFetch();
     });
 
