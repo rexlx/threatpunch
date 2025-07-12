@@ -423,7 +423,7 @@ function renderResultCards(resultsArray, isHistoryView = false) {
         const historyButton = document.createElement('a');
         historyButton.href = '#';
         historyButton.className = 'card-footer-item has-background-black has-text-info';
-        historyButton.textContent = 'Past Searches';
+        historyButton.innerHTML = `<span class="icon-text"><span class="icon"><i class="material-icons">history</i></span><span>Past Searches</span></span>`;
         historyButton.addEventListener('click', async (e) => {
             e.preventDefault();
             const pastSearches = await application.fetchPastSearches(result.value);
@@ -433,7 +433,7 @@ function renderResultCards(resultsArray, isHistoryView = false) {
         const viewButton = document.createElement('a');
         viewButton.href = '#';
         viewButton.className = 'card-footer-item has-background-black has-text-info';
-        viewButton.textContent = 'View Details';
+        viewButton.innerHTML = `<span class="icon-text"><span class="icon"><i class="material-icons">visibility</i></span><span>View Details</span></span>`;
         if (!result.link || result.link === "none") {
             viewButton.classList.add('is-disabled');
         }
@@ -467,7 +467,7 @@ function renderResultCards(resultsArray, isHistoryView = false) {
     const downloadButton = document.createElement('a');
     downloadButton.href = '#';
     downloadButton.className = 'card-footer-item has-background-primary has-text-black';
-    downloadButton.textContent = 'Download CSV';
+    downloadButton.innerHTML = `<span class="icon-text"><span class="icon"><i class="material-icons">download</i></span><span>Download CSV</span></span>`;
     downloadButton.addEventListener("click", (e) => {
         e.preventDefault();
         application.saveResultsToCSV(isHistoryView);
@@ -476,7 +476,8 @@ function renderResultCards(resultsArray, isHistoryView = false) {
     const clearButton = document.createElement('a');
     clearButton.href = '#';
     clearButton.className = 'card-footer-item has-background-primary has-text-black';
-    clearButton.textContent = isHistoryView ? 'Clear History' : 'Clear Results';
+    const clearText = isHistoryView ? 'Clear History' : 'Clear Results';
+    clearButton.innerHTML = `<span class="icon-text"><span class="icon"><i class="material-icons">delete_sweep</i></span><span>${clearText}</span></span>`;
     clearButton.addEventListener('click', (e) => {
         e.preventDefault();
         if (isHistoryView) {

@@ -1,5 +1,6 @@
 .menu-list a.is-active {
-  background-color: rgb(29, 69, 98);
+  /* background-color: rgb(29, 69, 98); */
+  background-color: #0b141c;
 }
 
 
@@ -32,10 +33,6 @@ accent-color: green;
   display:flex; 
   justify-content: space-between;
 
-}
-
-.has-background-custom {
-  background-color: #0b141c;
 }
 
 @font-face {
@@ -74,4 +71,41 @@ body {
 .message:hover {
     transform: scale(1.01);
     box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+}
+
+.is-sticky-top {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+/* Style for icons next to text in buttons/links */
+.icon-text {
+    display: inline-flex;
+    align-items: center;
+}
+
+.icon-text .icon {
+    margin-right: 0.5em;
+}
+
+/* Remove underline from footer links */
+.card-footer a {
+    text-decoration: none !important;
+}
+
+/* Optional: Add a subtle effect on hover to compensate for no underline */
+.card-footer a:hover {
+    background-color: #2a2a2a !important; /* A slightly lighter dark color */
+}
+
+/* Your original custom styles can go here too */
+.has-background-custom {
+  background-color: #0b141c;
+    /* background-color: #252323 !important; */
+}
+
+.profileButtons {
+    display: flex;
+    justify-content: space-between;
 }
