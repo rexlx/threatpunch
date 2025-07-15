@@ -176,15 +176,16 @@ function attachEventListeners() {
     });
 
     matchBox.addEventListener('click', async (event) => {
-        // Use .closest() to find the button if an icon or span inside it was clicked
         const button = event.target.closest('button');
-        if (!button) return; // Exit if the click wasn't on or in a button
+        if (!button) return;
 
         const targetId = button.id;
 
         if (targetId === 'searchButton') {
             event.preventDefault();
+            // Clear previous results and errors before starting a new search
             application.results = []; 
+            application.errors = [];
             
             const userSearch = document.getElementById('userSearch');
             if (!userSearch) return; 
@@ -497,16 +498,24 @@ function renderResultCards(resultsArray, isHistoryView = false) {
 
 let previousResults = [];
 async function updateUI() {
+    // Clear the box at the start of each render cycle
+    errorBox.innerHTML = '';
+
+    // Display any persistent errors. They are now only cleared when a new search starts.
     if (application.errors.length > 0) {
-        errorBox.innerHTML = '';
         const errors = [...new Set(application.errors)];
         errors.forEach(error => {
             errorBox.innerHTML += `<p class="has-text-warning">${escapeHtml(String(error))}</p>`;
         });
-        application.errors = [];
-    } else if (application.resultWorkers.length > 0) {
-        errorBox.innerHTML = `<p class="has-text-info">Jobs remaining: ${application.resultWorkers.length}</p>`;
-    } else {
+    }
+
+    // Display the number of running jobs. This can appear alongside errors.
+    if (application.resultWorkers.length > 0) {
+        errorBox.innerHTML += `<p class="has-text-info">Jobs remaining: ${application.resultWorkers.length}</p>`;
+    }
+
+    // If, after checking for errors and jobs, the box is still empty, show the "nominal" status.
+    if (errorBox.innerHTML === '') {
         errorBox.innerHTML = '<p class="has-text-success">System nominal</p>';
     }
 
