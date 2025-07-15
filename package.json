@@ -23,10 +23,13 @@
       "src/**/*",
       "index.html",
       "styles/**/*",
-      "package.json"
+      "package.json",
+      "build/**/*"
     ],
     "directories": {
       "output": "dist"
-    }
+    },
+    "icon": "build/icon.png"
   }
 }
+

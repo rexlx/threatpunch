@@ -1,5 +1,3 @@
-
-
 const { app, BrowserWindow, shell, ipcMain, dialog, Menu } = require('electron');
 const path = require('path');
 const Store = require('electron-store');
@@ -12,6 +10,10 @@ function createMainWindow() {
   const mainWindow = new BrowserWindow({
     width: 1000,
     height: 600,
+    // --- ADD THIS LINE ---
+    // This sets the icon for the window. 
+    // It assumes you have a 'build' folder in your project's root with 'icon.png' inside.
+    icon: path.join(__dirname, '../build/icon.png'),
     webPreferences: {
       
       preload: path.join(__dirname, 'preload.js'),
@@ -181,6 +183,9 @@ ipcMain.handle('create-details-window', (event, { details, title }) => {
         width: 800,
         height: 600,
         title: title,
+        // --- ADD THIS LINE HERE TOO ---
+        // So your detail windows also get the icon
+        icon: path.join(__dirname, '../build/icon.png'),
         webPreferences: {
             
             preload: path.join(__dirname, 'preload.js'),
