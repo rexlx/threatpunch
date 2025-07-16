@@ -17,6 +17,7 @@ const editUserEmail = document.getElementById("editUserEmail");
 const editUserKey = document.getElementById("editUserKey");
 const backButtonServices = document.getElementById("backButtonServices");
 const backButtonProfile = document.getElementById("backButtonProfile");
+const rectifyServicesButton = document.getElementById("rectifyServicesButton");
 const notificationContainer = document.getElementById("notificationContainer");
 const sidebarSearch = document.getElementById("sidebarSearch");
 const sidebarRecentActivity = document.getElementById("sidebarRecentActivity");
@@ -270,6 +271,13 @@ function attachEventListeners() {
         e.preventDefault();
         showView(mainSection);
     });
+
+    rectifyServicesButton.addEventListener('click', async (e) => {
+        e.preventDefault();
+        await application.rectifyServices();
+        await navigateToServices(); // Re-render the view with updated service data
+    });
+
     backButtonProfile.addEventListener('click', (e) => {
         e.preventDefault();
         if (application.user && application.user.key && application.apiUrl) {

@@ -343,6 +343,35 @@ export class Application {
         this.resultHistory.push(data);
         return data;
     }
+
+    async rectifyServices() {
+        if (!this.apiUrl || !this.user.key) {
+            this.errors.push("User or API URL not configured.");
+            return;
+        }
+        const thisURL = this.apiUrl + `rectify`;
+        try {
+            const response = await fetch(thisURL, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `${this.user.email}:${this.user.key}`
+                }
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP error! Status: ${response.status} - ${errorText}`);
+            }
+
+            const data = await response.json();
+            this.errors = [data.message || "Services rectified successfully."];
+            await this.getServices(); // Refresh the list of services
+
+        } catch (error) {
+            this.errors.push(`Error rectifying services: ${error.message}`);
+        }
+    }
+
     async getServices() {
         if (!this.user.email || !this.user.key) return;
         let thisURL = this.apiUrl + `getservices`
@@ -364,6 +393,7 @@ export class Application {
             }
 
             this.servers = data.map(sanitizeService);
+            this.errors = [];
         } catch (err) {
             this.errors.push("Error fetching services: " + err);
         }
