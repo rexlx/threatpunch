@@ -27,6 +27,8 @@
                 <ul class="menu-list">
                     <li><a id="sidebarSearch" class="is-active"><span class="icon-text"><span class="icon"><i class="material-icons">search</i></span><span>search</span></span></a></li>
                     <li><a id="sidebarRecentActivity"><span class="icon-text"><span class="icon"><i class="material-icons">history</i></span><span>responses</span></span></a></li>
+                    <!-- Added Health Check button -->
+                    <li><a id="sidebarHealth"><span class="icon-text"><span class="icon"><i class="material-icons">health_and_safety</i></span><span>health</span></span></a></li>
                 </ul>
                 <p class="menu-label has-text-grey-light">
                     Settings
@@ -39,6 +41,8 @@
         </div>
         <div class="column">
             <div id="notificationContainer" class="mb-4"></div>
+            <!-- Added container for health status, initially hidden -->
+            <div id="healthStatusContainer" class="box has-background-custom" style="display: none;"></div>
             <div class="box has-background-custom" id="matchBox">
             </div>
         </div>

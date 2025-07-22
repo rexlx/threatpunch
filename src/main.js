@@ -10,9 +10,6 @@ function createMainWindow() {
   const mainWindow = new BrowserWindow({
     width: 1000,
     height: 600,
-    // --- ADD THIS LINE ---
-    // This sets the icon for the window. 
-    // It assumes you have a 'build' folder in your project's root with 'icon.png' inside.
     icon: path.join(__dirname, '../build/icon.png'),
     webPreferences: {
       

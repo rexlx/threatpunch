@@ -19,11 +19,16 @@ const backButtonServices = document.getElementById("backButtonServices");
 const backButtonProfile = document.getElementById("backButtonProfile");
 const rectifyServicesButton = document.getElementById("rectifyServicesButton");
 const notificationContainer = document.getElementById("notificationContainer");
+
 const sidebarSearch = document.getElementById("sidebarSearch");
 const sidebarRecentActivity = document.getElementById("sidebarRecentActivity");
 const sidebarServices = document.getElementById("sidebarServices");
 const sidebarProfile = document.getElementById("sidebarProfile");
-const sidebarLinks = [sidebarSearch, sidebarRecentActivity, sidebarServices, sidebarProfile];
+const sidebarHealth = document.getElementById("sidebarHealth"); // New health button
+const sidebarLinks = [sidebarSearch, sidebarRecentActivity, sidebarServices, sidebarProfile, sidebarHealth];
+
+const healthStatusContainer = document.getElementById("healthStatusContainer");
+
 
 function showView(viewToShow) {
     allViews.forEach(view => {
@@ -48,11 +53,13 @@ function setActiveSidebar(activeLink) {
 }
 
 function renderSearchForm() {
+    if(healthStatusContainer) healthStatusContainer.style.display = 'none';
     if(notificationContainer) {
         notificationContainer.innerHTML = '';
         notificationContainer.classList.remove('is-sticky-top');
     }
     if(matchBox) {
+        matchBox.style.display = 'block';
         matchBox.innerHTML = `
             <h1 class="title has-text-info">Search</h1>
             <form action="">
@@ -270,6 +277,7 @@ function attachEventListeners() {
     backButtonServices.addEventListener('click', (e) => {
         e.preventDefault();
         showView(mainSection);
+        renderSearchForm();
     });
 
     rectifyServicesButton.addEventListener('click', async (e) => {
@@ -282,6 +290,7 @@ function attachEventListeners() {
         e.preventDefault();
         if (application.user && application.user.key && application.apiUrl) {
             showView(mainSection);
+            renderSearchForm();
         }
     });
     
@@ -296,9 +305,12 @@ function attachEventListeners() {
         e.preventDefault();
         setActiveSidebar(e.target);
         showView(mainSection);
+        if (healthStatusContainer) healthStatusContainer.style.display = 'none';
         if (notificationContainer) notificationContainer.innerHTML = '';
-    
-        matchBox.innerHTML = renderResponseFilters();
+        if (matchBox) {
+            matchBox.style.display = 'block';
+            matchBox.innerHTML = renderResponseFilters();
+        }
     
         handleResponseFetch();
     });
@@ -314,6 +326,24 @@ function attachEventListeners() {
         setActiveSidebar(e.target);
         navigateToProfile();
     });
+
+    sidebarHealth.addEventListener('click', async (e) => {
+        e.preventDefault();
+        setActiveSidebar(e.target);
+        showView(mainSection);
+        if (matchBox) matchBox.style.display = 'none'; // Hide the main search box
+        if (notificationContainer) notificationContainer.innerHTML = '';
+
+        healthStatusContainer.innerHTML = '<p class="has-text-info">Checking health...</p><progress class="progress is-small is-primary" max="100"></progress>';
+        healthStatusContainer.style.display = 'block';
+        const stats = await application.getServerStats();
+        if (stats) {
+            renderHealthStatus(stats);
+        } else {
+            healthStatusContainer.innerHTML = '<p class="has-text-danger">Could not retrieve health stats.</p>';
+        }
+    });
+
 
     window.electronAPI.onNavigate(async (page) => {
         switch (page) {
@@ -387,6 +417,8 @@ function displayPastSearchesNotification(pastSearches, value) {
 }
 
 function renderResultCards(resultsArray, isHistoryView = false) {
+    if (healthStatusContainer) healthStatusContainer.style.display = 'none';
+    matchBox.style.display = 'block';
     matchBox.innerHTML = ""; 
     if (resultsArray.length === 0) {
         matchBox.innerHTML = `<p class="has-text-info">${isHistoryView ? 'History is empty.' : 'No results found.'}</p>`;
@@ -623,6 +655,76 @@ function createServiceCard(service) {
     column.appendChild(card);
     return column;
 }
+
+/**
+ * Renders the health status information into a table.
+ * @param {Object} stats - The stats object returned from the API.
+ */
+function renderHealthStatus(stats) {
+    if (!healthStatusContainer) return;
+
+    healthStatusContainer.innerHTML = ''; // Clear previous results
+    let hasHealthChecks = false;
+
+    const title = document.createElement('h1');
+    title.className = 'title has-text-info';
+    title.textContent = 'Health Check';
+    healthStatusContainer.appendChild(title);
+
+    const table = document.createElement('table');
+    table.className = 'table is-fullwidth is-striped has-background-dark';
+    table.innerHTML = `
+        <thead class="has-background-black">
+            <tr>
+                <th class="has-text-info">Service</th>
+                <th class="has-text-info">Status</th>
+            </tr>
+        </thead>
+    `;
+
+    const tbody = document.createElement('tbody');
+
+    for (const key in stats) {
+        if (key.startsWith('health-check-')) {
+            hasHealthChecks = true;
+            const serviceName = key.replace('health-check-', '');
+            const status = stats[key];
+
+            const tr = document.createElement('tr');
+            const serviceTd = document.createElement('td');
+            serviceTd.className = 'has-text-white';
+            serviceTd.textContent = serviceName;
+
+            const statusTd = document.createElement('td');
+            const statusSpan = document.createElement('span');
+            statusSpan.className = 'tag';
+
+            if (status === 1 || status === '1') {
+                statusSpan.classList.add('is-success');
+                statusSpan.textContent = 'UP';
+            } else {
+                statusSpan.classList.add('is-danger');
+                statusSpan.textContent = 'DOWN';
+            }
+            statusTd.appendChild(statusSpan);
+
+            tr.appendChild(serviceTd);
+            tr.appendChild(statusTd);
+            tbody.appendChild(tr);
+        }
+    }
+    
+    table.appendChild(tbody);
+
+    if (hasHealthChecks) {
+        healthStatusContainer.appendChild(table);
+    } else {
+        healthStatusContainer.innerHTML += '<p class="has-text-info">No health check information available.</p>';
+    }
+
+    healthStatusContainer.style.display = 'block';
+}
+
 
 function escapeHtml(unsafe) {
     if (typeof unsafe !== 'string') return '';

@@ -398,6 +398,40 @@ export class Application {
             this.errors.push("Error fetching services: " + err);
         }
     }
+    
+    /**
+     * Fetches server statistics, including health checks.
+     * @returns {Promise<Object|null>} A promise that resolves to a map of stats, or null on error.
+     */
+    async getServerStats() {
+        if (!this.user.email || !this.user.key) {
+            this.errors.push("User or API key not configured.");
+            return null;
+        }
+        let thisURL = this.apiUrl + `stats`;
+        try {
+            let response = await fetch(thisURL, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `${this.user.email}:${this.user.key}`
+                }
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            let data = await response.json();
+
+            // The data is expected to be an object/map, not an array.
+            if (typeof data !== 'object' || data === null || Array.isArray(data)) {
+                throw new Error("Unexpected data format for stats: " + JSON.stringify(data));
+            }
+            return data;
+        } catch (err) {
+            this.errors.push("Error fetching server stats: " + err.message);
+            return null; // Return null on error
+        }
+    }
 }
 
 function sanitizeService(service) {
